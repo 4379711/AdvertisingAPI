@@ -1,0 +1,12 @@
+dist/*
+*.egg-info/*
+.idea/*
+*.bak
+build/*
+test*
+*.log
+*.txt
+*.spec
+.env/
+.venv/
+*/__pycache__/
