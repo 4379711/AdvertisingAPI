@@ -3,10 +3,10 @@ import json
 
 from requests import api as request_api
 from Advertising.config import *
-from Advertising.utils import remove_empty, MyTypeAssert
+from Advertising.utils import remove_empty, MyTypeAssert, MixParams
 
 
-class Client:
+class Client(MixParams):
     """
     Base advertising API .
     """
@@ -279,3 +279,7 @@ class Portfolios(Client):
             'state': state
         }]
         return self.make_request(interface, method='PUT', payload=data)
+
+
+class SbClient(Client):
+    VERSION = ''
