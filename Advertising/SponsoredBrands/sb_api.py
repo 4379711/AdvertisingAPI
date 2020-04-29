@@ -15,21 +15,17 @@ class Brands(SbClient):
 
 class Campaigns(SbClient):
 
-    def get_campaign(self, startIndex=None, count=None, stateFilter=None, name=None,
-                     portfolioIdFilter=None, campaignIdFilter=None,
-                     all_data_list=None, **params):
+    def get_campaign(self, **params):
 
         interface = 'sb/campaigns/'
-        if all_data_list is not None:
-            return self.make_request(interface, method='GET', payload=all_data_list)
-        # assert stateFilter in ["enabled", "paused", "archived"]
+
         data = {
-            'startIndex': startIndex,
-            'count': count,
-            'stateFilter': stateFilter,
-            'name': name,
-            'portfolioIdFilter': portfolioIdFilter,
-            'campaignIdFilter': campaignIdFilter,
+            'startIndex': params.get('startIndex'),
+            'count': params.get('count'),
+            'stateFilter': params.get('stateFilter'),
+            'name': params.get('name'),
+            'portfolioIdFilter': params.get('portfolioIdFilter'),
+            'campaignIdFilter': params.get('campaignIdFilter'),
         }
         data.update(params)
         return self.make_request(interface, payload=data)
@@ -38,77 +34,122 @@ class Campaigns(SbClient):
         interface = 'sb/campaigns/{campaign_id}'.format(campaign_id=campaign_id)
         return self.make_request(interface)
 
-    def create_campaigns(self, name, brand_entityid, portfolio_id, state, budget: (int, float),
-                         budget_type,
-                         start_date, bid_multiplier, bid_optimization=False,
+    def create_campaigns(self, budget, name, brand_entityid, portfolio_id,
+                         state, budget_type, start_date, end_date,
+                         bid_multiplier, bid_optimization, creative, landing_page,
                          all_data_list=None, **params):
-        interface = 'sd/campaigns'
+        '''
+        :param budget:
+        :param name:
+        :param brand_entityid:
+        :param portfolio_id:
+        :param state:
+        :param budget_type:
+        :param start_date:
+        :param end_date:
+        :param bid_multiplier:
+        :param bid_optimization:
+        :param creative: {
+              "brandName": "string",
+              "brandLogoAssetID": "string",
+              "headline": "string",
+              "asins": [
+                "string"
+              ],
+              "shouldOptimizeAsins": false
+        }
+        :param landing_page:
+        :param all_data_list:
+        :param params: must have one of [
+        {
+            "keywords": [{
+            "keywordText": "string",
+            "matchType": one of [broad, exact, phrase],
+            "bid": 0
+            }],
+            "negativeKeywords": [{
+            "keywordText": "string",
+            "matchType": one of [negativeExact, negativePhrase]
+            }]
+        },
+        {
+            "expressions": [{
+                "expression": {
+                      "type": one of [asinCategorySameAs, asinBrandSameAs, asinPriceLessThan, asinPriceBetween,
+                            asinPriceGreaterThan, asinReviewRatingLessThan, asinReviewRatingBetween,
+                            asinReviewRatingGreaterThan, asinSameAs],
+                      "value": "string"
+                },
+                "matchType": one of ['broad', 'exact', 'phrase'],
+                "bid": 0
+            }],
+            "negativeExpressions": [{
+                "expression": {
+                      "type": one of ['asinBrandSameAs', 'asinSameAs'],
+                      "value": "string"
+                },
+                "matchType": one of ['negativeExact', 'negativePhrase'],
+                "bid": 0
+            }]
+        }]
+        :return:
+        '''
+        interface = 'sb/campaigns'
         if all_data_list is not None:
+            MyTypeAssert.other_assert(all_data_list, types=list)
             return self.make_request(interface, method='POST', payload=all_data_list)
         MyTypeAssert.number_assert(budget)
+        MyTypeAssert.number_assert(portfolio_id)
         assert len(start_date) == 8
+        assert len(end_date) == 8
         assert budget_type in ["lifetime", "daily"]
         assert state in ["enabled", "paused", "archived"]
         assert bid_optimization in [True, False]
         assert -99 <= bid_multiplier <= 99
+        MyTypeAssert.other_assert(creative, types=dict)
+        MyTypeAssert.other_assert(landing_page, types=dict)
 
         data = [{
             "name": name,
             "budget": budget,
             "budgetType": budget_type,
             "startDate": start_date,
+            "endDate": end_date,
             "state": state,
             "brandEntityId": brand_entityid,
             "bidOptimization": bid_optimization,
             "bidMultiplier": bid_multiplier,
             "portfolioId": portfolio_id,
-            # "creative": {
-            #   "brandName": "string",
-            #   "brandLogoAssetID": "string",
-            #   "headline": "string",
-            #   "asins": [
-            #     "string"
-            #   ],
-            #   "shouldOptimizeAsins": false
-            # },
-            # "landingPage": {
-            #   "asins": [
-            #     "string"
-            #   ],
-            #   "url": "string"
-            # },
-            # "keywords": [
-            #   {
-            #     "keywordText": "string",
-            #     "matchType": "broad",
-            #     "bid": 0
-            #   }
-            # ],
-            # "negativeKeywords": [
-            #   {
-            #     "keywordText": "string",
-            #     "matchType": "negativeExact"
-            #   }
-            # ]
+            'creative': creative,
         }]
         data[0].update(params)
         return self.make_request(interface, method='POST', payload=data)
 
     def update_campaigns(self, campaign_id, all_data_list=None, **params):
+        '''
+
+        :param campaign_id:
+        :param portfolio_id:
+        :param all_data_list:
+        :param params: must some of {
+                "name": "string",
+                "budget": 0,
+                "endDate": "string",
+                "state": "enabled",
+                "bidOptimization": true,
+                "bidMultiplier": 0,
+                "portfolioId": 0,
+        }
+        :return:
+        '''
         interface = 'sb/campaigns'
         if all_data_list is not None:
+            MyTypeAssert.other_assert(all_data_list, types=list)
             return self.make_request(interface, method='PUT', payload=all_data_list)
         MyTypeAssert.number_assert(campaign_id)
 
         data = [{
             "campaignId": campaign_id,
-            # "name": "string",
-            # "budget": 0,
-            # "endDate": "string",
-            # "state": "enabled",
-            # "bidOptimization": true,
-            # "bidMultiplier": 0,
-            # "portfolioId": 0
         }]
         data[0].update(params)
 
@@ -124,12 +165,13 @@ class AdGroups(SbClient):
 
     def get_ad_group(self, **params):
         interface = 'sb/adGroups/'
+
         payload = {
             'startIndex': params.get('startIndex'),
             'count': params.get('count'),
             'name': params.get('name'),
             'adGroupIdFilter': params.get('adGroupIdFilter'),
-            'campaignIdFilter': params.get('campaignIdFilter')
+            'campaignIdFilter': params.get('campaignIdFilter'),
         }
         return self.make_request(interface, payload=payload)
 
@@ -189,13 +231,8 @@ class Keywords(SbClient):
         interface = 'sb/keywords/{}'.format(keyword_id)
         return self.make_request(interface)
 
-    def get_keyword(self, all_data_list=None, **params):
+    def get_keyword(self, **params):
         interface = 'sb/keywords'
-        if all_data_list is not None:
-            return self.make_request(interface=interface, payload=all_data_list)
-        # MyTypeAssert.number_assert(keyword_id)
-        # assert match_type in ['broad', 'exact', 'phrase']
-        # assert state in ['enabled', 'paused', 'archived']
 
         data = {
             'startIndex': params.get('startIndex'),
@@ -612,7 +649,7 @@ class Drafts(SbClient):
           ],
           "url": "string"
         }
-        :param all_data_list:
+        :param all_data_list: max 10
         :param params: one of [{
             "keywords": [{
                 "keywordText": "string",
@@ -666,8 +703,18 @@ class Drafts(SbClient):
         data[0].update(params)
         return self.make_request(interface=interface, method='POST', payload=data)
 
-    def update_drafts_campaigns(self, **params):
-        interface = '/sb/drafts/campaigns'
+    def update_drafts_campaigns(self, all_data_list=None, **params):
+        '''
+
+        :param all_data_list: max 10
+        :param params:
+        :return:
+        '''
+        interface = 'sb/drafts/campaigns'
+        if all_data_list is not None:
+            MyTypeAssert.other_assert(all_data_list, types=list)
+            return self.make_request(interface=interface, method='PUT', payload=all_data_list)
+
         data = [{
             "name": params.get('name'),
             "budget": params.get('budget'),

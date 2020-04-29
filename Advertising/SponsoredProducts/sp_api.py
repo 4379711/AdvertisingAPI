@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import gzip
 import json
-
 from Advertising.Account import Client
 from Advertising.utils import MyTypeAssert
 

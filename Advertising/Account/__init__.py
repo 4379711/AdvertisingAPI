@@ -62,8 +62,6 @@ class Client(MixParams):
                                 headers=headers,
                                 data=json.dumps(data))
         self._access_token = dict(resp.json()).get('access_token')
-        print('got new token :')
-        print(self._access_token)
 
     def _get_header(self, **params):
         # you can set headers in params.
